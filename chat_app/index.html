@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iChat-RealTime Node Socket io Chat App</title>
+    <script src="http://localhost:8000/socket.io/socket.io.js"></script>
+</head>
+<style>
+    .logo {
+        display: block;
+        margin: auto;
+        height: 8vh;
+    }
+
+    body {
+        background-image: linear-gradient(rgb(255, 255, 255), rgb(109, 39, 239));
+        height: 100vh;
+    }
+    h1{
+        margin-top: 12px;
+        font-size: 30px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        text-align: center;
+    }
+
+    .container {
+        max-width: 955px;
+        border: 2px solid black;
+        padding: 33px;
+        overflow-y: auto;
+        margin: auto;
+        height: 60vh;
+        margin-bottom: 23px;
+    }
+
+    .message {
+        background-color: grey;
+        width: 24%;
+        height: 7vh;
+        margin: 17px 12px;
+        border: 2px solid black;
+        border-radius: 10px;
+    }
+
+    .left {
+        float: left;
+        clear: both;
+    }
+
+    .right {
+        float: right;
+        clear: both;
+    }
+
+    #send-container {
+        display: block;
+        margin: auto;
+        text-align: center;
+        max-width: 1085px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+    }
+
+    #messageInp {
+        width: 80%;
+        border: 2px solid black;
+        border-radius: 6px;
+        height: 34px;
+        font-size: 22px;
+    }
+
+    .btn {
+        margin: 0 5px;
+        cursor: pointer;
+        border: 2px solid black;
+        border-radius: 6px;
+        height: 34px;
+        width: 9%;
+
+    }
+</style>
+
+<body>
+    <nav>
+        <img class="logo" src="https://static-00.iconduck.com/assets.00/whatsapp-warning-icon-512x512-1ik6iv5g.png"
+            alt="This is logo">
+            <h1>Welcome to iChat App</h1>
+    </nav>
+    <div class="container">
+        <!-- <div class="message right">Haider: Hello, How are you?</div>
+        <div class="message left">Aarjav: I am fine what's about you?</div> -->
+    </div>
+    <div class="send">
+        <form action="#" id="send-container">
+            <input type="text" name="messageInp" id="messageInp">
+            <button class="btn" type="submit">send</button>
+        </form>
+    </div>
+    <script>
+        const nam = prompt("Enter your name to join the chat");
+        const socket = io("http://localhost:8000");
+        const form = document.getElementById('send-container');
+        const messageInp = document.getElementById('messageInp');
+        const messageContainer = document.querySelector(".container");
+
+        var audio = new Audio("./ting.mp3");
+
+        const append = (message, position) => {
+            const messageElement = document.createElement('div');
+            messageElement.innerText = message;
+            messageElement.classList.add('message');
+            messageElement.classList.add(position);
+            messageContainer.append(messageElement);
+
+            // Check if the position is 'left' and play the sound
+            if (position == 'left') {
+                audio.play();
+            }
+        }
+
+        socket.emit('new-user-joined', nam);
+
+        socket.on('user-joined', (name) => {
+            append(`${name} joined the chat`, 'right');
+        });
+
+        socket.on('receive', (data) => {
+            append(`${data.name}: ${data.message}`, 'left');
+        });
+
+        socket.on('left', (name) => {
+            append(`${name} leave the chat`, 'left');
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = messageInp.value;
+            append(`You: ${message}`, 'right');
+            socket.emit('send', message);
+            messageInp.value = '';
+        });
+    </script>
+
+</body>
+
+</html>
